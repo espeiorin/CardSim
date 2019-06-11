@@ -83,4 +83,49 @@ class CardSimTests: XCTestCase {
             XCTAssert(false)
         }
     }
+    
+    func testCardPriorities() {
+        let eightRed = NumberCard(number: .eight, color: .red)
+        let eightBlue = NumberCard(number: .eight, color: .blue)
+        let sixYellow = NumberCard(number: .six, color: .yellow)
+        let sixBlue = NumberCard(number: .six, color: .blue)
+        let reverse = ReverseCard()
+        
+        XCTAssertEqual(reverse.discardPriority(pileCard: eightRed), DiscardPriority.medium)
+        XCTAssertEqual(eightRed.discardPriority(pileCard: eightBlue), DiscardPriority.high)
+        XCTAssertEqual(eightRed.discardPriority(pileCard: sixYellow), DiscardPriority.none)
+        XCTAssertEqual(eightBlue.discardPriority(pileCard: sixBlue), DiscardPriority.highest)
+        XCTAssertEqual(sixBlue.discardPriority(pileCard: sixYellow), DiscardPriority.high)
+        XCTAssertEqual(sixYellow.discardPriority(pileCard: reverse), DiscardPriority.none)
+    }
+    
+    func testPlayerScenario() {
+        let eightRed = NumberCard(number: .eight, color: .red)
+        let eightBlue = NumberCard(number: .eight, color: .blue)
+        let sixYellow = NumberCard(number: .six, color: .yellow)
+        let player = Player(name: "Marcos", cardA: eightRed, cardB: eightBlue, cardC: sixYellow)
+        
+        XCTAssertEqual(player.play(pileCard: NumberCard(number: .six, color: .red))?.name, eightRed.name)
+        XCTAssertEqual(player.cardCount, 2)
+        XCTAssertEqual(player.play(pileCard: NumberCard(number: .six, color: .green))?.name, sixYellow.name)
+        XCTAssertEqual(player.cardCount, 1)
+        XCTAssertEqual(player.play(pileCard: NumberCard(number: .eight, color: .yellow))?.name, eightBlue.name)
+        XCTAssertEqual(player.cardCount, 0)
+    }
+    
+    func testAlternatePlayerScenario() {
+        let eightRed = NumberCard(number: .eight, color: .red)
+        let eightBlue = NumberCard(number: .eight, color: .blue)
+        let reverse = ReverseCard()
+        let player = Player(name: "Marcos", cardA: eightRed, cardB: eightBlue, cardC: reverse)
+        
+        XCTAssertEqual(player.play(pileCard: NumberCard(number: .six, color: .red))?.name, eightRed.name)
+        XCTAssertEqual(player.cardCount, 2)
+        XCTAssertEqual(player.play(pileCard: NumberCard(number: .six, color: .green))?.name, reverse.name)
+        XCTAssertEqual(player.cardCount, 1)
+        XCTAssertNil(player.play(pileCard: NumberCard(number: .six, color: .green))?.name)
+        XCTAssertEqual(player.cardCount, 1)
+        XCTAssertEqual(player.play(pileCard: NumberCard(number: .eight, color: .yellow))?.name, eightBlue.name)
+        XCTAssertEqual(player.cardCount, 0)
+    }
 }
